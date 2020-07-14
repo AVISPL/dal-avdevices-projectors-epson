@@ -32,6 +32,7 @@ public class SocketCommunicator extends BaseDevice implements Communicator {
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final ConnectionStatus status = new ConnectionStatus();
+    private final int socketTimeout = 30000;
 
     protected String login;
     protected String password;
@@ -195,7 +196,7 @@ public class SocketCommunicator extends BaseDevice implements Communicator {
         try {
             if (this.socket == null || this.socket.isClosed() || !this.socket.isConnected()) {
                 this.socket = new Socket(this.host, this.port);
-                this.socket.setSoTimeout(30000);
+                this.socket.setSoTimeout(socketTimeout);
             }
 
         }catch (UnknownHostException ex) {
