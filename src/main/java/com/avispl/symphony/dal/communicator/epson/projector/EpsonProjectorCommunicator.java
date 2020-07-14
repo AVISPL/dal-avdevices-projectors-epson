@@ -14,7 +14,13 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,6 +28,35 @@ import java.util.stream.Collectors;
 
 import static com.avispl.symphony.dal.communicator.epson.projector.EpsonProjectorCommunicatorControls.*;
 
+/**
+ * An implementation of SocketCommunicator to provide TCP communication with Epson Projector
+ * Monitoring features:
+ *      Standby Mode:
+ *          - Lamp operation time (hours)
+ *          - Power mode
+ *          - Serial number
+ *      Active Mode:
+ *          - Lamp operation time (hours)
+ *          - Power mode
+ *          - Serial number
+ * Controlling features:
+ *      Standby Mode:
+ *          - Power
+ *      Active Mode:
+ *          - Power
+ *          - Freeze
+ *          - Mute
+ *          - Image color mode
+ *          - Brightness (0-255)
+ *          - Contrast (0-255)
+ *          - Sharp (0-255)
+ *          - Color temperature (0-255)
+ *          - Red (0-255)
+ *          - Green (0-255)
+ *          - Blue (0-255)
+ * @version 1.0
+ * @author Maksym.Rossiytsev
+ */
 public class EpsonProjectorCommunicator extends SocketCommunicator implements Monitorable, Controller {
     private final ReentrantLock controlOperationsLock = new ReentrantLock();
     private ExtendedStatistics localStatistics;
