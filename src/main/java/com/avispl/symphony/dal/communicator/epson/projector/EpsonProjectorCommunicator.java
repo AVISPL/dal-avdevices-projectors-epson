@@ -101,7 +101,7 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
                         disconnect();
                     }
                     break;
-                case "Mute":
+                case "A/V Mute":
                     toggleSwitch("0".equals(value) ? MUTE_OFF : MUTE_ON, property, value);
                     break;
                 case "Freeze":
@@ -195,7 +195,7 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
                         logger.debug("Received lamp operation time: " + lampOperationTime);
                     }
                     logger.debug("setting lamp operation time");
-                    stats.put("Lamp operation time", String.valueOf(lampOperationTime));
+                    stats.put("Lamp operation time (hrs)", String.valueOf(lampOperationTime));
                     logger.debug("setting lamp operation time " + stats);
                 }
 
@@ -239,8 +239,8 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
             if (logger.isDebugEnabled()) {
                 logger.debug("Received mute status: " + muteStatus);
             }
-            stats.put("Mute", String.valueOf(muteStatus));
-            controllableProperties.add(createSwitch("Mute", muteStatus));
+            stats.put("A/V Mute", String.valueOf(muteStatus));
+            controllableProperties.add(createSwitch("A/V Mute", muteStatus));
         }
 
         int freezeStatus = getFreezeStatus();
@@ -340,7 +340,7 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
             }
             COLOR_MODES.keySet().stream().filter(key -> imageColorMode == COLOR_MODES.get(key)).findFirst().ifPresent(s -> {
                 stats.put("Image color mode", String.valueOf(imageColorMode));
-                controllableProperties.add(createPreset("Image color mode", COLOR_MODES, String.valueOf(imageColorMode)));
+                controllableProperties.add(createDropdown("Image color mode", COLOR_MODES, String.valueOf(imageColorMode)));
             });
         }
     }
@@ -596,12 +596,12 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
      * @param initialValue initial value of the control
      * @return AdvancedControllableProperty preset instance
      */
-    private AdvancedControllableProperty createPreset(String name, Map<String, Integer> values, String initialValue){
-        AdvancedControllableProperty.Preset preset = new AdvancedControllableProperty.Preset();
-        preset.setOptions(values.values().stream().map(String::valueOf).collect(Collectors.toList()).toArray(new String[values.size()]));
-        preset.setLabels(values.keySet().toArray(new String[0]));
+    private AdvancedControllableProperty createDropdown(String name, Map<String, Integer> values, String initialValue){
+        AdvancedControllableProperty.DropDown dropDown = new AdvancedControllableProperty.DropDown();
+        dropDown.setOptions(values.values().stream().map(String::valueOf).collect(Collectors.toList()).toArray(new String[values.size()]));
+        dropDown.setLabels(values.keySet().toArray(new String[0]));
 
-        return new AdvancedControllableProperty(name, new Date(), preset, initialValue);
+        return new AdvancedControllableProperty(name, new Date(), dropDown, initialValue);
     }
 
     /***
@@ -731,7 +731,10 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
     private void updateLocalStatisticsControls(String property, String value){
         try {
             localStatistics.getStatistics().put(property, value);
-            localStatistics.getControllableProperties().stream().filter(p -> p.getName().equals(property)).findFirst().ifPresent(p -> p.setValue(value));
+            localStatistics.getControllableProperties().stream().filter(p -> p.getName().equals(property)).findFirst().ifPresent(p -> {
+                p.setValue(value);
+                p.setTimestamp(new Date());
+            });
         } catch (Exception e) {
             logger.debug("EpsonProjector: Error during changing settings: " + property);
         }
