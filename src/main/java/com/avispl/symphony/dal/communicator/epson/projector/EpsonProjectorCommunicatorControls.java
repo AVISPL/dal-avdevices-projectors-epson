@@ -6,7 +6,7 @@ package com.avispl.symphony.dal.communicator.epson.projector;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class EpsonProjectorCommunicatorControls {
+final class EpsonProjectorCommunicatorControls {
     public static final byte[] ESC_VP_HANDSHAKE = new byte[] {
             69, 83, 67, 47, 86, 80, 46, 110, 101, 116,
             16, 3, 0, 0, 0, 0 };
