@@ -160,17 +160,17 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
     @Override
     public List<Statistics> getMultipleStatistics() throws Exception {
         ExtendedStatistics statistics = new ExtendedStatistics();
-        if(isValidControlCoolDown() && localStatistics != null){
-            if (logger.isDebugEnabled()) {
-                logger.debug("Device is occupied. Skipping statistics refresh call.");
-            }
-            statistics.setStatistics(localStatistics.getStatistics());
-            statistics.setControllableProperties(localStatistics.getControllableProperties());
-            return Collections.singletonList(statistics);
-        }
-
         controlOperationsLock.lock();
         try {
+            if(isValidControlCoolDown() && localStatistics != null){
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Device is occupied. Skipping statistics refresh call.");
+                }
+                statistics.setStatistics(localStatistics.getStatistics());
+                statistics.setControllableProperties(localStatistics.getControllableProperties());
+                return Collections.singletonList(statistics);
+            }
+
             List<AdvancedControllableProperty> controllableProperties = new ArrayList<>();
             Map<String, String> stats = new HashMap<>();
             logger.debug("An attempt to get extended properties!");
