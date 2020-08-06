@@ -39,6 +39,7 @@ public class EpsonProjectorCommunicatorTest {
     public void before() throws Exception {
         epsonBrightLightProjectorCommunicator.setHost(ipAddress);
         epsonBrightLightProjectorCommunicator.setPort(port);
+        epsonBrightLightProjectorCommunicator.setPassword("1234");
         epsonBrightLightProjectorCommunicator.init();
     }
 
