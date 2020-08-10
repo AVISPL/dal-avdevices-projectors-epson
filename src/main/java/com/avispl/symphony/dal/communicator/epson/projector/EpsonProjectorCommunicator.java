@@ -160,20 +160,19 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
     @Override
     public List<Statistics> getMultipleStatistics() throws Exception {
         ExtendedStatistics statistics = new ExtendedStatistics();
-        if(isValidControlCoolDown() && localStatistics != null){
-            if (logger.isDebugEnabled()) {
-                logger.debug("Device is occupied. Skipping statistics refresh call.");
-            }
-            statistics.setStatistics(localStatistics.getStatistics());
-            statistics.setControllableProperties(localStatistics.getControllableProperties());
-            return Collections.singletonList(statistics);
-        }
-
         controlOperationsLock.lock();
         try {
+            if(isValidControlCoolDown() && localStatistics != null){
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Device is occupied. Skipping statistics refresh call.");
+                }
+                statistics.setStatistics(localStatistics.getStatistics());
+                statistics.setControllableProperties(localStatistics.getControllableProperties());
+                return Collections.singletonList(statistics);
+            }
+
             List<AdvancedControllableProperty> controllableProperties = new ArrayList<>();
             Map<String, String> stats = new HashMap<>();
-            logger.debug("An attempt to get extended properties!");
             if (getConnectionStatus().getConnectionState().isConnected() || authorize() == 0) {
 
                 int powerStatus = getPowerStatus();
@@ -185,7 +184,6 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
 
                     int powerSwitchStatus = powerStatus == 1 ? 1 : 0;
                     stats.put("Power", String.valueOf(powerSwitchStatus));
-                    logger.debug("Setting power status " + stats);
                     controllableProperties.add(createSwitch("Power", powerSwitchStatus));
                 }
 
@@ -194,9 +192,7 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
                     if(logger.isDebugEnabled()){
                         logger.debug("Received lamp operation time: " + lampOperationTime);
                     }
-                    logger.debug("setting lamp operation time");
                     stats.put("Lamp operation time (hrs)", String.valueOf(lampOperationTime));
-                    logger.debug("setting lamp operation time " + stats);
                 }
 
                 String serialNumber = getSerialNumber();
@@ -204,26 +200,20 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
                     if(logger.isDebugEnabled()){
                         logger.debug("Received serial number: " + serialNumber);
                     }
-                    logger.debug("Setting serial");
                     stats.put("Serial number", serialNumber);
-                    logger.debug("Setting serial " + stats);
                 }
 
-                logger.debug("Power status is " + powerStatus + " processing....");
                 if(powerStatus == 1 || powerStatus == 2) {
                     populateImageSettings(stats, controllableProperties);
                 }
             }
-            logger.debug("Setting controllable properties: " + controllableProperties);
             statistics.setControllableProperties(controllableProperties);
-            logger.debug("Setting statistics: " + stats);
             statistics.setStatistics(stats);
             localStatistics = statistics;
         } finally {
             controlOperationsLock.unlock();
         }
 
-        logger.debug("Returning statistics! : " + statistics.getStatistics());
         return Collections.singletonList(statistics);
     }
 
@@ -629,7 +619,22 @@ public class EpsonProjectorCommunicator extends SocketCommunicator implements Mo
      */
     private int authorize() throws Exception {
         try {
-            byte[] response = send(ESC_VP_HANDSHAKE);
+            String password = getPassword();
+            byte[] response;
+            if(StringUtils.isEmpty(password)) {
+                response = send(ESC_VP_HANDSHAKE);
+            } else {
+                byte[] ESC_VP_HANDSHAKE_AUTH = new byte[] {
+                        69, 83, 67, 47, 86, 80, 46, 110, 101, 116,
+                        16, 3, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                char[] chars = password.toCharArray();
+                for(int i = 0; i < password.length(); i++) {
+                    if(chars.length >= i) {
+                        ESC_VP_HANDSHAKE_AUTH[18 + i] = (byte) chars[i];
+                    }
+                }
+                response = send(ESC_VP_HANDSHAKE_AUTH);
+            }
             return response[response.length - 1];
         } catch (Exception e){
             if(logger.isErrorEnabled()){

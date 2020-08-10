@@ -1,9 +1,11 @@
+/*
+ * Copyright (c) 2020 AVI-SPL Inc. All Rights Reserved.
+ */
 package com.avispl.symphony.dal.communicator.epson.projector;
 
 import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
-import com.avispl.symphony.dal.communicator.epson.projector.EpsonProjectorCommunicator;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -37,6 +39,7 @@ public class EpsonProjectorCommunicatorTest {
     public void before() throws Exception {
         epsonBrightLightProjectorCommunicator.setHost(ipAddress);
         epsonBrightLightProjectorCommunicator.setPort(port);
+        epsonBrightLightProjectorCommunicator.setPassword("1234");
         epsonBrightLightProjectorCommunicator.init();
     }
 
